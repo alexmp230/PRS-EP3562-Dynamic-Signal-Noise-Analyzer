@@ -1,0 +1,572 @@
+Author: Enrique Corpa Rios\
+Release: ...
+
+Version: 0.1\
+Date: 21.09.2023\
+Place: 9472 Grabs (CH)
+
+**PRODUCT REQUIREMENT SPECIFICATIONS**
+
+EP3562 Dynamic Signal + Noise Analyzer
+
+M = Firm demand (\"Must\")1
+
+S = Should be implemented, if all MUST requirements can be fulfilled
+anyway (\"Should\")
+
+C = Desired, can be implemented if fulfillment of higher-level
+requirements is not affected (\"Could\")
+
+W = will not be implemented this time, but will be reserved for the
+future (\"Won\'t\")
+
+# Introduction
+
+> Overall goal: development of a modern Dynamic Signal Analyzer (DSA)
+> based on the ancientHP3562A.
+
+-   Dual-channel spectrum analyzer with a range between 64 μHz to 100
+    kHz and with a dynamic range of 80 dB
+
+-   Modular 2-board system: a Single Board Computer (SBC), meant to be
+    reusable between different instruments, and the second
+    "Instrumentation Board" which will contain the analog front-end,
+    ADCs and communication interfaces
+
+-   The interface to the instrument will be through Ethernet (with or
+    without PoE) or Wi-Fi
+
+-   The instrument control panel will be accessed over IP in a web
+    browser to achieve following advantages:
+
+    -   Design of the GUI becomes a web UI design problem
+
+    -   Web UI are platform independent (no need to develop a desktop
+        app for multiple systems)
+
+    -   Modern web UI are responsive: they adapt to the device they are
+        viewed on (tablets, laptops, phones, etc.)
+
+    -   The application-level processing occurs directly in the
+        instrument, not in an external device
+
+    -   The instrument can be accessed from a single computer, LAN or
+        the internet, which helps in automation and test benches
+
+# General Requirements
+
+  --------- -------------------- ------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**               **Comments**   **Typ**
+
+  1.1       General Construction Two board design: SBC and                M
+                                 motherboard with                         
+                                 analog-fronted, signal                   
+                                 generator, etc.                          
+
+  1.2       Target price ex      TBD \[CHF\]                              M
+            works                                                         
+
+  1.3       Target Market        Worldwide                                M
+
+  1.4       Stand alone          Must be possible to                      M
+            operation            connect a mouse and                      
+                                 keyboard to use the                      
+                                 instrument as it's own                   
+                                 computer                                 
+  --------- -------------------- ------------------------- -------------- ---------
+
+# Hardware Requirements
+
+### 3.1 Dynamic Analyzer Characteristics {#dynamic-analyzer-characteristics .list-paragraph}
+
++-----+-------------------+-------------------------+------------+----+
+| *   | **Category**      | **Request**             | **         | *  |
+| *Nr |                   |                         | Comments** | *T |
+| .** |                   |                         |            | yp |
+|     |                   |                         |            | ** |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Bandwidth         | 200 kHz                 |            | M  |
+| 1.1 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Input Range Max   | +27 dBVrms (22 V)       |            | M  |
+| 1.2 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Input Range Min   | \- 131 dBVrms (300 nV   | -51 from   | M  |
+| 1.3 |                   | range)                  | HP3562,    |    |
+|     |                   |                         | but since  |    |
+|     |                   |                         | we have    |    |
+|     |                   |                         | 10000 gain |    |
+|     |                   |                         | → 131      |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Range Steps       | 2 dB                    |            | S  |
+| 1.4 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Maximum input     | 42 Vpk                  |            | M  |
+| 1.5 | level             |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Cross Talk        | -135 dB                 | Between    | M  |
+| 1.6 |                   |                         | channels   |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Input Channels    | 2                       |            | M  |
+| 1.7 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Input             | 1.  Single-ended        |            | M  |
+| 1.8 | configuration     |                         |            |    |
+|     |                   | 2.  Differential        |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Dual Channel      | Must not be reduced in  |            | M  |
+| 1.9 | Sample rate       | dual mod                |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | FFT Dynamic Range | 110 dB                  |            | M  |
+| .10 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | Swept Sine        | 150 dB                  | SR785 has  | M  |
+| .11 | Dynamic Range     |                         | 145 dB     |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | Real Time FFT     | 200 kHz                 | SR785 has  | M  |
+| .12 | Bandwidth         |                         | full BW    |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | Amplitude         | ±0.2 dB                 | SR785      | M  |
+| .13 | Accuracy Single   |                         |            |    |
+|     | Channel           |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | Amplitude         | ±0.05 dB                | SR785      | M  |
+| .14 | Accuracy Cross    |                         |            |    |
+|     | Channel           |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | Display update    | 30 Hz                   |            | M  |
+| .15 | Rate              |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.1 | Amplitude         | 24 bit                  | Raw        | M  |
+| .16 | resolution        |                         | resolution |    |
++-----+-------------------+-------------------------+------------+----+
+
+### 3.2 Signal Generator {#signal-generator .list-paragraph}
+
++-----+-------------------+-------------------------+------------+----+
+| *   | **Category**      | **Request**             | **         | *  |
+| *Nr |                   |                         | Comments** | *T |
+| .** |                   |                         |            | yp |
+|     |                   |                         |            | ** |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Source Output     | 1.  Random Noise        | Arbitrary  | M  |
+| 2.1 | Types             |                         | (Should?)  |    |
+|     |                   | 2.  Burst Random        |            |    |
+|     |                   |                         |            |    |
+|     |                   | 3.  Sine Chirp          |            |    |
+|     |                   |                         |            |    |
+|     |                   | 4.  Burst Chirp         |            |    |
+|     |                   |                         |            |    |
+|     |                   | 5.  Fixed Sine          |            |    |
+|     |                   |                         |            |    |
+|     |                   | 6.  Swept Sine          |            |    |
+|     |                   |                         |            |    |
+|     |                   | 7.  Step                |            |    |
+|     |                   |                         |            |    |
+|     |                   | 8.  Pulse               |            |    |
+|     |                   |                         |            |    |
+|     |                   | 9.  Ramp                |            |    |
+|     |                   |                         |            |    |
+|     |                   | 10. Arbitrary (Should?) |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Amplitude Range   | 0.01 mVp                |            | M  |
+| 2.2 | Min.              |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Amplitude Range   | 5 Vp                    |            | M  |
+| 2.3 | Max.              |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Offset adjustment | ±5 V                    |            | M  |
+| 2.4 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | DC Offset         | ±10 mV Typ.             |            | M  |
+| 2.5 | accuracy          |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Amplitude         | 0.1 mVp (Output \>= 500 |            | M  |
+| 2.6 | Resolution High   | mVp)                    |            |    |
+|     | Range             |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Amplitude         | 0.01 mVp (Output \< 500 |            | M  |
+| 2.7 | Resolution Low    | mVp)                    |            |    |
+|     | Range             |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Amplitude         | 0.01                    | Over the   | M  |
+| 2.8 | accuracy sine     |                         | entire BW  |    |
+|     | source High Range |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Amplitude         | 0.05                    | Over the   | M  |
+| 2.9 | accuracy sine     |                         | entire BW. |    |
+|     | source Low Range  |                         |            |    |
+|     |                   |                         | TBD, maybe |    |
+|     |                   |                         | 10%?       |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Output Impedance  | \< 5 Ω                  |            | M  |
+| .10 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Output current    | 100 mApk                |            | M  |
+| .11 | max.              |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Harmonic          | \< -80 dBc              | Entire BW  | M  |
+| .12 | Distortion        |                         | (With our  |    |
+|     |                   |                         | 24 bit     |    |
+|     |                   |                         | ADC, maybe |    |
+|     |                   |                         | we should  |    |
+|     |                   |                         | ask for    |    |
+|     |                   |                         | more)      |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Inter-modulation  | \< -80 dBc              |            | M  |
+| .13 | dist.             |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Spurious          | \< -80 dBfs             |            | M  |
+| .14 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Full-span FFT     |                         | Check what | M  |
+| .15 | noise floor       |                         | is         |    |
+|     |                   |                         | possible   |    |
+|     |                   |                         | with our   |    |
+|     |                   |                         | SR560-like |    |
+|     |                   |                         | front-end  |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Residual DC       | \< -30 dBfs             |            | M  |
+| .16 | response          |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Phase Accuracy    | ± 3 deg.                |            | M  |
+| .17 | Single Channel    |                         |            |    |
+|     | resp. Trigger     |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.2 | Phase Accuracy    | ± 0.5 deg.              |            | M  |
+| .18 | Single Channel    |                         |            |    |
+|     | resp. Trigger     |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+
+###  {#section .list-paragraph}
+
+### 3.3 Computer {#computer .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  3.3.1     Format               SBC in CM4 format          Apendix B      M
+
+  3.3.2     PCI-e                                                          M
+
+  3.3.3     SDD Storage min.     32 Gb                                     M
+
+  3.3.4     GPU                  Must be capable of OpenGL                 M
+                                 acceleration                              
+
+  3.3.5     RAM min.             4 Gb                                      M
+
+  3.3.6     CPU bus              64 bit                                    M
+  --------- -------------------- -------------------------- -------------- ---------
+
+##  {#section-1 .list-paragraph}
+
+### 3.4 Expansion Slots {#expansion-slots .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  3.4.1     Number of expansion  1                                         S
+            slots                                                          
+
+  3.4.2     Type                 TBD                                       S
+
+  3.4.3     Connector            TBD                                       S
+
+  3.4.4     Function             Any hardware connected to                 S
+                                 the expansion slot should                 
+                                 be accesible by the SBC                   
+                                 and FPGA                                  
+  --------- -------------------- -------------------------- -------------- ---------
+
+### 3.5 Connectivity {#connectivity .list-paragraph}
+
++-----+-------------------+-------------------------+------------+----+
+| *   | **Category**      | **Request**             | **         | *  |
+| *Nr |                   |                         | Comments** | *T |
+| .** |                   |                         |            | yp |
+|     |                   |                         |            | ** |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Front Panel       | 1.  Input channels      |            | M  |
+| 5.1 | Connectors        |                         |            |    |
+|     |                   | 2.  Input channel       |            |    |
+|     |                   |     grounding common    |            |    |
+|     |                   |                         |            |    |
+|     |                   | 3.  Source output       |            |    |
+|     |                   |                         |            |    |
+|     |                   | 4.  USB type C          |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Back Panel        | 1.  Reference input     |            | M  |
+| 5.2 | Connectors        |                         |            |    |
+|     |                   | 2.  Sync / reference    |            |    |
+|     |                   |     output              |            |    |
+|     |                   |                         |            |    |
+|     |                   | 3.  Ext. sample         |            |    |
+|     |                   |     (HP3562A)           |            |    |
+|     |                   |                         |            |    |
+|     |                   | 4.  Ethernet            |            |    |
+|     |                   |                         |            |    |
+|     |                   | 5.  4x USB type A       |            |    |
+|     |                   |                         |            |    |
+|     |                   | 6.  2x USB type C       |            |    |
+|     |                   |                         |            |    |
+|     |                   | 7.  Anti-thief lock     |            |    |
+|     |                   |                         |            |    |
+|     |                   | 8.  HDMI (tbd)          |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Front Panel       | Input channels and      |            | S  |
+| 5.3 | Illumination      | source output must have |            |    |
+|     |                   | RGB illumination for    |            |    |
+|     |                   | status information      |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Wifi              | Must have Wifi          |            | M  |
+| 5.4 |                   | connectivity            |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Back Panel USB    | All USB 3.0             |            | S  |
+| 5.5 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Power Input       | USB type C              |            | M  |
+| 5.6 | Connector         |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Ethernet          | Normal Ethernet         |            | M  |
+| 5.7 |                   | Connector               |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Ethernet Speed    | 1 Gbps                  |            | M  |
+| 5.8 |                   |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.  | Input Channel     | BNC                     | TBD: Check | M  |
+| 5.9 | Connectors        |                         | with rico  |    |
+|     |                   |                         | for lowest |    |
+|     |                   |                         | noise      |    |
+|     |                   |                         | options    |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.5 | Input Channel     | Standard by HP3562A     |            | M  |
+| .10 | Grounding         |                         |            |    |
+|     | Connector         |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+| 3.5 | Source Output     | BNC                     | TBD        | M  |
+| .11 | Connector         |                         |            |    |
++-----+-------------------+-------------------------+------------+----+
+
+### 3.6 Analog front-end (RS560 based) {#analog-front-end-rs560-based .list-paragraph}
+
+  --------- --------------- --------------------------------- -------------- ---------
+  **Nr.**   **Category**    **Request**                       **Comments**   **Typ**
+
+  3.6.1     Compatibility   Front end must be reusable in                    M
+                            HFLNA project with minimum                       
+                            changes.                                         
+
+  3.6.2     Bandwidth       -3 db @ 1 MHz, 1-pole roll-of     Instrument     M
+                                                              bandwidht is   
+                                                              different: 200 
+                                                              kHz this is    
+                                                              meant to be    
+                                                              used in the    
+                                                              HFLNA project  
+
+  3.6.3     Coupling        AC and DC coupling                               M
+
+  3.6.4     Coupling AC HPF 0.03 Hz 1 -- Pole                 This is the    M
+                                                              minimum AC     
+                                                              filter of the  
+                                                              RS560          
+
+  3.6.5     Imput Impedance 100 Mohm + 25 pF                                 M
+
+  3.6.6     Noise SPD       Equal or lover SR560              See apendix    M
+            Shorted Input                                                    
+
+  3.6.7     Noise @ 1 kHz   4 nV/sqrt(Hz) or lower                           M
+
+  3.6.8     Bandwidth       ±0.3 dB to 300 kHz                \*Check        M
+            Flatness                                          HP3562A        
+
+  3.6.9     Signal          0.01% @ 1 kHz                                    M
+            Distortion                                                       
+
+  3.6.10    CMRR            100 dB from DC to 1 kHz           100 mV common  M
+                                                              mode input at  
+                                                              1 kHz, gain of 
+                                                              100, low noise 
+                                                              mode.          
+                                                              Decreases by 6 
+                                                              dB/octave from 
+                                                              1 kHz to 1 MHz 
+  --------- --------------- --------------------------------- -------------- ---------
+
+### 3.7 Power Supply
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  3.7.1     Type                 External                                  M
+
+  3.7.2     Interface            Power Delivery Through USB                M
+                                 C                                         
+  --------- -------------------- -------------------------- -------------- ---------
+
+### 3.8 Housing {#housing .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  3.8.1     Height               50 mm                      Bode100        S
+
+  3.8.2     Width                260                        Bode100        S
+
+  3.8.3     Depth                265                        Bode100        S
+
+  3.8.4     Repair-ability       Access to main components                 M
+                                 with minimum work by the                  
+                                 user                                      
+  --------- -------------------- -------------------------- -------------- ---------
+
+### 3.9 Environmental Operating Restrictions  {#environmental-operating-restrictions .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  3.9.1     Ambient Temperature  0 ºC                                      M
+            Min                                                            
+
+  3.9.2     Ambient Temperature  55 ºC                                     M
+            Max                                                            
+
+  3.9.3     Relative Humidity    0.15                                      M
+            Min                                                            
+
+  3.9.4     Relative Humidity    95% @ 40 ºC                               M
+            Max                                                            
+
+  3.9.5     Vibrations           1.5 Grms 5 -- 500 Hz                      M
+
+  3.9.6     Shock                5 Grms                     TBD            M
+
+  3.9.7     Max. Altitude        4600 m                                    M
+  --------- -------------------- -------------------------- -------------- ---------
+
+### 3.10 Regulatory Approvals {#regulatory-approvals .list-paragraph}
+
+  --------- ------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**        **Request**                **Comments**   **Typ**
+
+  3.10.1    CE Marking                                                    M
+
+  3.10.2    CISPR21                                        Newest version M
+  --------- ------------------- -------------------------- -------------- ---------
+
+# Software Requirements
+
+## 4.1 OS and Libraries {#os-and-libraries .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  4.1.1     Operating System     Linux based                Details TBD    M
+
+  4.1.2     User API             User API to call all       Details TBD    M
+                                 instruments within the                    
+                                 device itself                             
+  --------- -------------------- -------------------------- -------------- ---------
+
+## 4.2 Communication protocols {#communication-protocols .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  4.2.1     SCPI                                            Details TBD    S
+
+  4.2.2     LXI                                             Details TBD    S
+  --------- -------------------- -------------------------- -------------- ---------
+
+## 4.3 Functions {#functions .list-paragraph}
+
+  --------- -------------------- -------------------------- -------------- ---------
+  **Nr.**   **Category**         **Request**                **Comments**   **Typ**
+
+  4.3.1     User Interface       Web browser interface                     M
+
+  4.3.2     User Interface       Full vector graphics       For infinite   M
+                                                            resolution     
+                                                            scalability    
+
+  4.3.3     Function             Data storage in USB flash                 S
+                                 drive                                     
+
+  4.3.4     Function             Display output through USB                S
+                                 C on the back                             
+
+  4.3.5     Measurement Mode     Bode Plotter                              M
+
+  4.3.6     Measurement Mode     Real Time Spectrum                        M
+  --------- -------------------- -------------------------- -------------- ---------
+
+# Definitions
+
+> **DSA**: Dynamic Signal Analyzer
+>
+> **BW**: Bandwidth
+>
+> **SBC**: Single Board Computer
+>
+> **OS**: Operating System
+>
+> **TBD**: To Be Determined
+
+# Appendix A
+
+> ![](vertopal_96d921b5152443fbb120fc329e1ad677/media/image1.png){width="6.102777777777778in"
+> height="4.396527777777778in"}
+
+# Appendix B
+
+![](vertopal_96d921b5152443fbb120fc329e1ad677/media/image2.png){width="6.3in"
+height="4.557638888888889in"}**See also CM4-Datasheet section 3.1**
+
+# MoSCoW prioritization
+
+The criteria in this specification are organized according to MoSCoW
+prioritization.
+
+MUST
+
+(M absolutely required)
+
+MUST refers to requirements that are essential to the project and
+non-negotiable. Failure to implement them in whole or in part would lead
+to the failure of the project. Requirements of this type are summarized
+in the project timebox1. MUST is also an acronym - Minimal Usable
+Subset - and stands for minimum requirement.
+
+SHOULD
+
+(S - should be implemented if all MUST requirements can still be met).
+
+Although SHOULD requirements are not critical to the success of the
+project, they are highly relevant and should be taken into account in
+the project implementation as long as they do not interfere with MUST
+requirements. SHOULD requirements can often be implemented in different
+ways.
+
+COULD
+
+(C - can be implemented if the fulfillment of higher level requirements
+is not affected)
+
+COULD requirements have a low relevance and are often described as
+\"nice to have\". They are only taken into account if capacities are
+still available in addition to the priority processing of MUST and
+SHOULD requirements. But COULD requirements should not be ignored across
+the board. Often, a few simple COULD requirements can generate
+significant added value at minimal additional development costs.
+
+WON\'T
+
+(W - will not be implemented this time, but bookmarked for the future).
+
+WON\'T requirements are of lowest priority for the current project or
+planning stage. Classification as WON\'T means that the requirement is
+important from a business and/or technical point of view, but not
+critical in terms of time. Requirements classified in this way are not
+forgotten and are considered again in the next release.
