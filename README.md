@@ -366,11 +366,11 @@ based on the ancientHP3562A.
 
 # Appendix A
 
-<img src="Pictures/10000001000003450000025B1ED4C346E00BFAB1.png" style="width:6.1028in;height:4.3965in" />
+<img src="image1.png" style="width:6.1028in;height:4.3965in" />
 
 # Appendix B
 
-<img src="Pictures/10000001000003C2000002B8C62EC254D9681E75.png" style="width:6.3in;height:4.5575in" />See
+<img src="image2.png" style="width:6.3in;height:4.5575in" />See
 also CM4-Datasheet section 3.1
 
 # MoSCoW prioritization
